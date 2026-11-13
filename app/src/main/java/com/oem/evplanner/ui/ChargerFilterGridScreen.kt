@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -5,15 +8,23 @@ import androidx.car.app.Screen
 import androidx.car.app.model.*
 import com.oem.evplanner.model.ChargerFilterMode
 
+/**
+ * Screen class displaying a grid of filter options for narrowing down charging stations
+ * using [GridTemplate].
+ */
 class ChargerFilterGridScreen(
     carContext: CarContext,
     private val currentFilter: ChargerFilterMode,
     private val onFilterSelected: (ChargerFilterMode) -> Unit
 ) : Screen(carContext) {
 
+    /**
+     * Builds and returns the [GridTemplate] containing filter mode options.
+     */
     override fun onGetTemplate(): Template {
         val gridBuilder = ItemList.Builder()
 
+        // Populate grid items for each available charger filter mode
         ChargerFilterMode.entries.forEach { mode ->
             val isSelected = mode == currentFilter
             gridBuilder.addItem(

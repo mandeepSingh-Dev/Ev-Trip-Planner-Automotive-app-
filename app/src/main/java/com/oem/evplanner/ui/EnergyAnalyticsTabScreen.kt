@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -8,6 +11,10 @@ import com.oem.evplanner.model.ChargingHistoryRecord
 import com.oem.evplanner.telemetry.EvTelemetryManager
 import java.util.Locale
 
+/**
+ * Screen class displaying energy analytics, consumption efficiency diagnostics,
+ * and past charging history logs using [TabTemplate].
+ */
 class EnergyAnalyticsTabScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager
@@ -15,12 +22,16 @@ class EnergyAnalyticsTabScreen(
 
     private var activeTabId = TAB_DIAGNOSTICS
 
+    // Sample charging history records
     private val historyLogs = listOf(
         ChargingHistoryRecord("h1", "Nov 11 • Cyber Hub", "Tata Power 120kW", 38.4, 114, 710),
         ChargingHistoryRecord("h2", "Nov 07 • Aerocity", "Statiq 180kW", 44.2, 162, 928),
         ChargingHistoryRecord("h3", "Nov 02 • Manesar NH48", "Zeon 240kW", 51.0, 198, 1147)
     )
 
+    /**
+     * Builds and returns the [TabTemplate] switching between energy diagnostics and charge history.
+     */
     override fun onGetTemplate(): Template {
         val diagnosticsTab = Tab.Builder()
             .setTitle("Energy & Efficiency")
@@ -56,6 +67,9 @@ class EnergyAnalyticsTabScreen(
             .build()
     }
 
+    /**
+     * Builds the pane template for live energy consumption efficiency and battery diagnostics.
+     */
     private fun buildDiagnosticsPane(): PaneTemplate {
         val state = telemetryManager.telemetryState.value
         val efficiencyWhKm = EvRangeCalculator.getLiveEfficiencyWhPerKm(state).toInt()
@@ -86,6 +100,9 @@ class EnergyAnalyticsTabScreen(
         return PaneTemplate.Builder(pane).build()
     }
 
+    /**
+     * Builds the list template containing past charging session history records.
+     */
     private fun buildHistoryList(): ListTemplate {
         val listBuilder = ItemList.Builder()
         historyLogs.forEach { log ->

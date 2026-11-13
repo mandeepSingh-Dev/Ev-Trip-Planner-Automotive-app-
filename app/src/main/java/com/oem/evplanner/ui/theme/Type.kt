@@ -1,3 +1,6 @@
+/**
+ * Package definition for Jetpack Compose typography styles.
+ */
 package com.oem.evplanner.ui.theme
 
 import androidx.compose.material3.Typography
@@ -7,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 // Set of Material typography styles to start with
+/** Material 3 typography configuration for the application. */
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,

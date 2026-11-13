@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -11,6 +14,10 @@ import com.oem.evplanner.map.EvMapSurfaceRenderer
 import com.oem.evplanner.permissions.EvPermissionHelper
 import com.oem.evplanner.telemetry.EvTelemetryManager
 
+/**
+ * Screen class prompting the driver to grant required automotive permissions (car energy and location)
+ * using [MessageTemplate].
+ */
 class PermissionRequiredScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager,
@@ -25,6 +32,9 @@ class PermissionRequiredScreen(
         triggerPermissionPrompt()
     }
 
+    /**
+     * Triggers the permission request prompt via [EvPermissionHelper].
+     */
     private fun triggerPermissionPrompt() {
         EvPermissionHelper.requestMissingPermissions(carContext) { allGranted, _, rejected ->
             if (allGranted) {
@@ -41,6 +51,9 @@ class PermissionRequiredScreen(
         }
     }
 
+    /**
+     * Builds and returns the [MessageTemplate] explaining permission requirements with a grant action button.
+     */
     override fun onGetTemplate(): Template {
         val message = if (deniedPermissions.isEmpty()) {
             "EV Trip Planner requires access to vehicle battery telemetry and location to calculate real-time range and locate nearby fast chargers."

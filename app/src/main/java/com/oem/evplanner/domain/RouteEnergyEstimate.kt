@@ -1,9 +1,15 @@
+/**
+ * Package definition for domain models and business logic.
+ */
 package com.oem.evplanner.domain
 
 import com.oem.evplanner.model.ChargingStation
 import com.oem.evplanner.telemetry.EvTelemetryState
 import kotlin.math.roundToInt
 
+/**
+ * Data class holding route energy calculation results and estimates for reaching a charging station.
+ */
 data class RouteEnergyEstimate(
     val isReachable: Boolean,
     val estimatedEnergyUsedKwh: Double,
@@ -14,19 +20,39 @@ data class RouteEnergyEstimate(
     val safetyBufferWarning: String?
 )
 
+/**
+ * Calculator object providing range and energy estimation algorithms based on live vehicle telemetry.
+ */
 object EvRangeCalculator {
 
     private const val DEFAULT_EFFICIENCY_WH_PER_KM = 165.0
     private const val MIN_SAFE_ARRIVAL_SOC = 10
 
+    /**
+     * Calculates live energy efficiency in Watt-hours per kilometer (Wh/km) based on telemetry state.
+     *
+     * @param state Current [EvTelemetryState].
+     * @return Calculated efficiency in Wh/km.
+     */
     fun getLiveEfficiencyWhPerKm(state: EvTelemetryState): Double {
-        return if (state.batteryEnergyWh > 1000f && state.rangeRemainingKm > 5) {
+        val base = if (state.batteryEnergyWh > 1000f && state.rangeRemainingKm > 5) {
             (state.batteryEnergyWh / state.rangeRemainingKm.toDouble()).coerceIn(110.0, 320.0)
         } else {
             DEFAULT_EFFICIENCY_WH_PER_KM
         }
+        // Apply 18% cold-weather battery & cabin heating penalty below 10°C
+        return if (state.isColdWeatherDeratingActive) base * 1.18 else base
     }
 
+    /**
+     * Evaluates route energy requirements and arrival state of charge for traveling to a charging station.
+     *
+     * @param state Current [EvTelemetryState].
+     * @param station Target [ChargingStation].
+     * @param effectiveDistanceKm Distance to the station in kilometers.
+     * @param isPreconditioningActive Whether battery preconditioning is enabled.
+     * @return Calculated [RouteEnergyEstimate].
+     */
     fun evaluateRouteToStation(
         state: EvTelemetryState,
         station: ChargingStation,
@@ -34,6 +60,7 @@ object EvRangeCalculator {
         isPreconditioningActive: Boolean = false
     ): RouteEnergyEstimate {
         val baseEfficiency = getLiveEfficiencyWhPerKm(state)
+        // Add preconditioning energy overhead if active
         val preconditioningOverheadWh = if (isPreconditioningActive) 1500.0 else 0.0
         val tripEnergyWh = (effectiveDistanceKm * baseEfficiency) + preconditioningOverheadWh
 
@@ -51,6 +78,7 @@ object EvRangeCalculator {
         val chargeMinutes = ((energyNeededKwh / effectiveChargerKw) * 60.0).roundToInt()
         val estimatedCostInr = (energyNeededKwh * station.pricePerKwhInr).roundToInt()
 
+        // Determine safety buffer warning message based on arrival SoC
         val warning = when {
             !isReachable -> "Out of range — closer charger required"
             arrivalSoc < MIN_SAFE_ARRIVAL_SOC -> "Low arrival buffer (<10% SoC) — select Eco route"

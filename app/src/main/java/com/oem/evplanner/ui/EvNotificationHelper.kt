@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI notification helpers.
+ */
 package com.oem.evplanner.ui
 
 import android.app.NotificationChannel
@@ -13,10 +16,21 @@ import androidx.core.app.NotificationCompat
 import com.oem.evplanner.R
 import com.oem.evplanner.service.EvPlannerCarAppService
 
+/**
+ * Helper object responsible for showing high-priority automotive car notifications
+ * such as low battery range warnings.
+ */
 object EvNotificationHelper {
 
     private const val CHANNEL_ID = "ev_planner_alerts"
 
+    /**
+     * Shows a low battery alert notification on the car screen with a quick action to find fast chargers.
+     *
+     * @param context Context used for building notifications.
+     * @param socPercent Current State of Charge percentage.
+     * @param rangeKm Remaining driving range in kilometers.
+     */
     fun showLowBatteryAlert(context: Context, socPercent: Int, rangeKm: Int) {
         val manager = CarNotificationManager.from(context)
         val channel = NotificationChannelCompat.Builder(

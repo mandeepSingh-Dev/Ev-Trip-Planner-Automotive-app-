@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import android.text.SpannableString
@@ -15,6 +18,10 @@ import com.oem.evplanner.telemetry.EvTelemetryManager
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
+/**
+ * Main screen class displaying a searchable/filterable list of nearby charging stations
+ * alongside live battery telemetry and map rendering using [PlaceListMapTemplate].
+ */
 class ChargerListScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager,
@@ -28,11 +35,13 @@ class ChargerListScreen(
     private var hasSentLowBatteryAlert = false
 
     init {
+        // Observe telemetry state changes to update range, map, and check for low battery alerts
         telemetryManager.telemetryState
             .onEach { newState ->
                 currentState = newState
                 mapRenderer.updateMapState(rangeKm = newState.rangeRemainingKm, station = null)
 
+                // Trigger low battery notification if SoC is between 1% and 15% and not plugged in
                 if (newState.socPercent in 1..15 && !newState.isChargePortConnected && !hasSentLowBatteryAlert) {
                     hasSentLowBatteryAlert = true
                     EvNotificationHelper.showLowBatteryAlert(
@@ -48,6 +57,7 @@ class ChargerListScreen(
             }
             .launchIn(lifecycleScope)
 
+        // Observe charging station repository updates
         repository.stations
             .onEach { list ->
                 stations = list
@@ -56,6 +66,9 @@ class ChargerListScreen(
             .launchIn(lifecycleScope)
     }
 
+    /**
+     * Builds and returns the [PlaceListMapTemplate] containing battery diagnostics and station rows.
+     */
     override fun onGetTemplate(): Template {
         val filteredStations = applyFilter(stations, activeFilter)
         val itemListBuilder = ItemList.Builder()
@@ -78,6 +91,7 @@ class ChargerListScreen(
             )
         }
 
+        // Add battery diagnostics summary row at the top of the list
         itemListBuilder.addItem(
             Row.Builder()
                 .setTitle("Battery & Energy Diagnostics (${currentState.socPercent}% SoC)")
@@ -92,7 +106,7 @@ class ChargerListScreen(
                 .build()
         )
 
-        // Station Rows
+        // Populate station rows based on filtered stations and max allowed rows
         filteredStations
             .take(maxStationRows)
             .forEach { station ->
@@ -135,7 +149,7 @@ class ChargerListScreen(
                 )
             }
 
-        // PlaceListMapTemplate ActionStrip supports up to 2 actions cleanly
+        // Trip planner action button for action strip
         val tripPlannerAction = Action.Builder()
             .setTitle("Trip Plan")
             .setOnClickListener {
@@ -145,6 +159,7 @@ class ChargerListScreen(
             }
             .build()
 
+        // Filter action button for action strip
         val filterAction = Action.Builder()
             .setTitle(if (activeFilter == ChargerFilterMode.ALL) "Filter" else activeFilter.label)
             .setOnClickListener {
@@ -173,6 +188,9 @@ class ChargerListScreen(
             .build()
     }
 
+    /**
+     * Applies the selected filter mode to the list of charging stations.
+     */
     private fun applyFilter(
         allStations: List<ChargingStation>,
         mode: ChargerFilterMode

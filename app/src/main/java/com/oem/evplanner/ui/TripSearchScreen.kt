@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -8,6 +11,10 @@ import com.oem.evplanner.domain.MultiStopTripPlanner
 import com.oem.evplanner.map.EvMapSurfaceRenderer
 import com.oem.evplanner.telemetry.EvTelemetryManager
 
+/**
+ * Screen class allowing drivers to search or select long-distance trip destinations
+ * along major highway corridors using [SearchTemplate].
+ */
 class TripSearchScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager,
@@ -17,6 +24,7 @@ class TripSearchScreen(
 
     private var queryText = ""
 
+    // Preset destination corridors for trip planning
     private val presetCorridors = listOf(
         "Jaipur Pink City (NH-48)" to 275.0,
         "Chandigarh Sector 17 (NH-44)" to 248.0,
@@ -24,6 +32,9 @@ class TripSearchScreen(
         "Neemrana Fort Highway Hub" to 122.0
     )
 
+    /**
+     * Builds and returns the [SearchTemplate] with search input and filtered destination corridors.
+     */
     override fun onGetTemplate(): Template {
         val state = telemetryManager.telemetryState.value
         val stations = repository.stations.value

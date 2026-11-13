@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -6,11 +9,18 @@ import androidx.car.app.model.*
 import com.oem.evplanner.domain.EvPreferencesStore
 import com.oem.evplanner.telemetry.EvTelemetryManager
 
+/**
+ * Screen class displaying vehicle settings, minimum arrival SoC buffers, Plug & Charge preferences,
+ * and ambient thermal status using [ListTemplate].
+ */
 class VehicleSettingsScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager
 ) : Screen(carContext) {
 
+    /**
+     * Builds and returns the [ListTemplate] showing driver preferences and vehicle settings options.
+     */
     override fun onGetTemplate(): Template {
         val prefs = EvPreferencesStore.prefs.value
         val state = telemetryManager.telemetryState.value

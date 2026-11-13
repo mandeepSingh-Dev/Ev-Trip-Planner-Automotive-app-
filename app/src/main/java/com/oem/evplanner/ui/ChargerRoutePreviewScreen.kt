@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import android.text.SpannableString
@@ -15,6 +18,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.concurrent.TimeUnit
 
+/**
+ * Screen class displaying route options, energy estimates, and preconditioning controls
+ * prior to starting navigation to a selected charging station using [RoutePreviewNavigationTemplate].
+ */
 class ChargerRoutePreviewScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager,
@@ -27,8 +34,10 @@ class ChargerRoutePreviewScreen(
     private var isPreconditioningOn = true
 
     init {
+        // Update map surface with initial route preview state
         mapRenderer.updateMapState(currentState.rangeRemainingKm, station, ecoRoute = false)
 
+        // Observe telemetry changes to update route calculations in real time
         telemetryManager.telemetryState
             .onEach { newState ->
                 currentState = newState
@@ -37,7 +46,11 @@ class ChargerRoutePreviewScreen(
             .launchIn(lifecycleScope)
     }
 
+    /**
+     * Builds and returns the [RoutePreviewNavigationTemplate] with route choices and preconditioning toggle.
+     */
     override fun onGetTemplate(): Template {
+        // Define route options (Fastest Route vs. Eco Range-Saver)
         val routes = listOf(
             Triple("Fastest Route (${station.distanceKm} km)", station.distanceKm, station.estimatedMinutes),
             Triple("Eco Range-Saver (${(station.distanceKm * 1.06).toInt()} km)", station.distanceKm * 0.88, station.estimatedMinutes + 6)
@@ -51,6 +64,7 @@ class ChargerRoutePreviewScreen(
                 invalidate()
             }
 
+        // Populate route options into the list builder
         routes.forEach { (title, effectiveEnergyKm, etaMins) ->
             val estimate = EvRangeCalculator.evaluateRouteToStation(
                 state = currentState,
@@ -78,6 +92,7 @@ class ChargerRoutePreviewScreen(
             )
         }
 
+        // Action button for toggling battery preconditioning
         val preconditionAction = Action.Builder()
             .setTitle(if (isPreconditioningOn) "Preconditioning: ON" else "Precondition: OFF")
             .setOnClickListener {
@@ -86,6 +101,7 @@ class ChargerRoutePreviewScreen(
             }
             .build()
 
+        // Action button to start active navigation
         val navigateAction = Action.Builder()
             .setTitle("Start Navigation")
             .setBackgroundColor(CarColor.PRIMARY)

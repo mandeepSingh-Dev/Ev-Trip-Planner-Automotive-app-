@@ -1,3 +1,6 @@
+/**
+ * Package definition for vehicle telemetry and VHAL integration classes.
+ */
 package com.oem.evplanner.telemetry
 
 import android.car.Car
@@ -15,6 +18,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.math.abs
 
+/**
+ * Data class representing the live telemetry state of the electric vehicle (EV),
+ * retrieved via the Vehicle Hardware Abstraction Layer (VHAL).
+ */
 data class EvTelemetryState(
     val isConnectedToCarService: Boolean = false,
     val batteryEnergyWh: Float = 31_500f,       // 42% of 75 kWh default for initial display
@@ -24,40 +31,59 @@ data class EvTelemetryState(
     val isChargePortConnected: Boolean = false,
     val currentGear: Int = VehicleGear.GEAR_PARK,
     val isDistractionOptimizationRequired: Boolean = false,
-    val maxAllowedListItems: Int = 12
+    val maxAllowedListItems: Int = 12,
+    /** Ambient outside temperature in Celsius for thermal management calculations. */
+    val ambientTempCelsius: Float = 24.0f
 ) {
+    /** State of Charge percentage calculated from battery energy and total capacity. */
     val socPercent: Int
         get() = if (batteryCapacityWh > 0f) {
             ((batteryEnergyWh / batteryCapacityWh) * 100f).toInt().coerceIn(0, 100)
         } else 0
 
+    /** Remaining driving range in kilometers. */
     val rangeRemainingKm: Int
         get() = (rangeRemainingMeters / 1000f).toInt()
 
+    /** Whether the vehicle is currently in Park gear. */
     val isParked: Boolean
         get() = currentGear == VehicleGear.GEAR_PARK
 
+    /** Charging power in kilowatts (kW) derived from absolute instantaneous charge rate. */
     val chargingPowerKw: Float
         get() = abs(instantaneousChargeRateMilliwatts) / 1_000_000f
+
+    /** Whether cold weather derating is active (ambient temperature below 10°C). */
+    val isColdWeatherDeratingActive: Boolean
+        get() = ambientTempCelsius < 10.0f
 }
 
+/**
+ * Manager class responsible for connecting to the Android Car Service and subscribing
+ * to VHAL properties for EV telemetry updates.
+ */
 class EvTelemetryManager(context: Context) {
 
     private var car: Car? = null
     private var propertyManager: CarPropertyManager? = null
     private var uxRestrictionsManager: CarUxRestrictionsManager? = null
 
+    /** Mutable backing StateFlow for EV telemetry state. */
     private val _telemetryState = MutableStateFlow(EvTelemetryState())
+    /** Read-only StateFlow exposing EV telemetry state to UI and domain components. */
     val telemetryState: StateFlow<EvTelemetryState> = _telemetryState.asStateFlow()
 
+    /** List of VHAL property IDs tracked by the telemetry manager. */
     private val trackedProperties = listOf(
         VehiclePropertyIds.EV_BATTERY_LEVEL,
         VehiclePropertyIds.EV_BATTERY_INSTANTANEOUS_CHARGE_RATE,
         VehiclePropertyIds.EV_CHARGE_PORT_CONNECTED,
         VehiclePropertyIds.CURRENT_GEAR,
-        VehiclePropertyIds.RANGE_REMAINING
+        VehiclePropertyIds.RANGE_REMAINING,
+        VehiclePropertyIds.ENV_OUTSIDE_TEMPERATURE
     )
 
+    /** Callback listener for VHAL property change events. */
     private val propertyCallback = object : CarPropertyManager.CarPropertyEventCallback {
         override fun onChangeEvent(value: CarPropertyValue<*>) {
             when (value.propertyId) {
@@ -91,6 +117,11 @@ class EvTelemetryManager(context: Context) {
                         _telemetryState.update { it.copy(rangeRemainingMeters = meters) }
                     }
                 }
+                VehiclePropertyIds.ENV_OUTSIDE_TEMPERATURE -> {
+                    (value.value as? Float)?.let { tempC ->
+                        _telemetryState.update { it.copy(ambientTempCelsius = tempC) }
+                    }
+                }
             }
         }
 
@@ -99,11 +130,13 @@ class EvTelemetryManager(context: Context) {
         }
     }
 
+    /** Listener for car UX restrictions changes (e.g. driving state optimizations). */
     private val uxListener = CarUxRestrictionsManager.OnUxRestrictionsChangedListener { restrictions ->
         applyUxRestrictions(restrictions)
     }
 
     init {
+        // Initialize connection to Android Car Service
         car = Car.createCar(
             context.applicationContext,
             null,
@@ -121,6 +154,9 @@ class EvTelemetryManager(context: Context) {
         }
     }
 
+    /**
+     * Reads EV battery total capacity property from VHAL.
+     */
     private fun readBatteryCapacity() {
         try {
             val cap = propertyManager?.getFloatProperty(VehiclePropertyIds.INFO_EV_BATTERY_CAPACITY, 0) ?: 0f
@@ -132,6 +168,9 @@ class EvTelemetryManager(context: Context) {
         }
     }
 
+    /**
+     * Registers property callbacks for all tracked VHAL properties.
+     */
     private fun registerPropertyCallbacks() {
         val manager = propertyManager ?: return
         trackedProperties.forEach { propId ->
@@ -149,12 +188,18 @@ class EvTelemetryManager(context: Context) {
         }
     }
 
+    /**
+     * Registers UX restrictions listener.
+     */
     private fun registerUxRestrictions() {
         val uxManager = uxRestrictionsManager ?: return
         uxManager.registerListener(uxListener)
         uxManager.currentCarUxRestrictions?.let { applyUxRestrictions(it) }
     }
 
+    /**
+     * Applies UX restrictions to the telemetry state.
+     */
     private fun applyUxRestrictions(restrictions: CarUxRestrictions) {
         _telemetryState.update {
             it.copy(
@@ -164,45 +209,25 @@ class EvTelemetryManager(context: Context) {
         }
     }
 
+    /**
+     * Releases VHAL callbacks and disconnects from car service.
+     */
     fun release() {
         propertyManager?.unregisterCallback(propertyCallback)
         uxRestrictionsManager?.unregisterListener()
         car?.disconnect()
     }
 
-    companion object {
-        private const val TAG = "EvTelemetryManager"
-    }
-
-
-
-    // Add this method inside EvTelemetryManager
+    /**
+     * Refreshes battery capacity and property subscriptions after runtime permissions are granted.
+     */
     fun refreshAfterPermissionGrant() {
         propertyManager?.unregisterCallback(propertyCallback)
         readBatteryCapacity()
         registerPropertyCallbacks()
     }
 
-    // Inside EvTelemetryState
-    val ambientTempCelsius: Float = 24.0f
-
-    val isColdWeatherDeratingActive: Boolean
-        get() = ambientTempCelsius < 10.0f
-
-// Inside EvTelemetryManager.propertyCallback
-    VehiclePropertyIds.ENV_OUTSIDE_TEMPERATURE -> {
-        (value.value as? Float)?.let { tempC ->
-            _telemetryState.update { it.copy(ambientTempCelsius = tempC) }
-        }
-    }
-
-    fun getLiveEfficiencyWhPerKm(state: EvTelemetryState): Double {
-        val base = if (state.batteryEnergyWh > 1000f && state.rangeRemainingKm > 5) {
-            (state.batteryEnergyWh / state.rangeRemainingKm.toDouble()).coerceIn(110.0, 320.0)
-        } else {
-            DEFAULT_EFFICIENCY_WH_PER_KM
-        }
-        // Apply 18% cold-weather battery & cabin heating penalty below 10°C
-        return if (state.isColdWeatherDeratingActive) base * 1.18 else base
+    companion object {
+        private const val TAG = "EvTelemetryManager"
     }
 }

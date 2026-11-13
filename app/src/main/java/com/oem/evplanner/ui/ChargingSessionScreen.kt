@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -9,6 +12,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.Locale
 
+/**
+ * Screen class displaying live charging session telemetry, power intake, state of charge,
+ * and charge target limits using [PaneTemplate].
+ */
 class ChargingSessionScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager
@@ -18,6 +25,7 @@ class ChargingSessionScreen(
     private var chargeTargetPercent = 80
 
     init {
+        // Observe live telemetry updates during active charging session
         telemetryManager.telemetryState
             .onEach { newState ->
                 currentState = newState
@@ -26,6 +34,9 @@ class ChargingSessionScreen(
             .launchIn(lifecycleScope)
     }
 
+    /**
+     * Builds and returns the [PaneTemplate] showing live battery SoC, charge power, and target time remaining.
+     */
     override fun onGetTemplate(): Template {
         val currentKwh = String.format(Locale.US, "%.1f", currentState.batteryEnergyWh / 1000f)
         val capacityKwh = String.format(Locale.US, "%.1f", currentState.batteryCapacityWh / 1000f)

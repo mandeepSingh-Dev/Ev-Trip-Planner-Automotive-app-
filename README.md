@@ -160,3 +160,40 @@ The application interfaces directly with vehicle sensor and property managers to
   |       & GEAR_PARK safety verification.                         with total kWh delivered & ₹ billed.          |
   +--------------------------------------------------------------------------------------------------------------+
 ```
+
+
+
+**Another Same High level Diagram but in short**
+
+[AAOS HARDWARE & CLOUD]
+├── VHAL / CAN Bus (Battery Wh, Range m, Gear, Plug-In, Temp °C) ──▶ EvTelemetryManager (StateFlow)
+├── CarUxRestrictionsManager (Driving list cap <= 6 items) ─────────┘
+└── OpenChargeMap Cloud (Retrofit 3.0 + Gson) ──────────────────────▶ ChargingStationRepository
+│
+▼
+[DOMAIN & SESSION ENGINE]                                         EvRangeCalculator & MultiStopTripPlanner
+├── EvPlannerCarAppService ──▶ EvPlannerSession                 (Arrival SoC %, Cold-Weather -18%, Trip Stops)
+│    ├── Startup Gate ─────────▶ PermissionRequiredScreen                     │
+│    ├── Plug-In Interrupt ────▶ Auto-pushes ChargingSessionScreen            │
+│    ├── Voice Intent (geo:) ──▶ Jumps to ChargerRoutePreviewScreen           │
+│    └── Low Battery (<=15%) ──▶ CarAppExtender Heads-Up Notification         │
+│                                                                             │
+├── EvMapSurfaceRenderer (SurfaceCallback Canvas: Range Halo + Route Line) ◀──┤
+└── ClusterHudBroadcaster ────▶ Project 3: Digital Cluster (com.oem.cluster) ◀┘
+│
+▼
+[CAR APP LIBRARY (CAL) SCREEN FLOW]
+1. ChargerListScreen (PlaceListMapTemplate — Host Google Map + Live SoC Header)
+   ├── Action: "Filter" ────▶ ChargerFilterGridScreen (GridTemplate)
+   ├── Action: "Trip Plan" ─▶ TripSearchScreen (SearchTemplate) ──▶ TripItineraryScreen (ListTemplate)
+   ├── Row 0: "Battery" ────▶ EnergyAnalyticsTabScreen (TabTemplate) / VehicleSettingsScreen
+   └── Tap Station ─────────▶ 2. StationDetailScreen (PaneTemplate + Stall Reserve + ReportIssueGridScreen)
+   │
+   ▼
+   3. ChargerRoutePreviewScreen (RoutePreviewNavigationTemplate + Preconditioning)
+   │
+   ▼
+   4. ActiveNavigationScreen (NavigationTemplate + Turn-by-Turn + Cluster Sync)
+   │ (On Plug-In)
+   ▼
+   5. ChargingSessionScreen (PaneTemplate) ──(On Unplug)──▶ 6. ChargingReceiptScreen

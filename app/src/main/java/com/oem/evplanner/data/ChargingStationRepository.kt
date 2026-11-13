@@ -1,3 +1,6 @@
+/**
+ * Package definition for data repositories and remote/local data sources.
+ */
 package com.oem.evplanner.data
 
 import com.oem.evplanner.model.ChargingStation
@@ -6,12 +9,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Repository class managing charging station data sources, including local cached corridor
+ * stations and live network synchronization via Open Charge Map API.
+ */
 class ChargingStationRepository {
 
-
-    // Add inside ChargingStationRepository
+    /** Client for fetching live Point of Interest data from Open Charge Map network. */
     private val ocmClient = OpenChargeMapClient(apiKey = "") // Plug in your OCM key when ready
 
+    /**
+     * Refreshes charging stations from the remote Open Charge Map network based on geographic coordinates.
+     *
+     * @param lat Latitude coordinate for search center.
+     * @param lon Longitude coordinate for search center.
+     */
     suspend fun refreshFromNetwork(lat: Double = 28.5355, lon: Double = 77.2100) {
         val liveStations = ocmClient.fetchNearbyStations(lat, lon)
         if (liveStations.isNotEmpty()) {
@@ -19,7 +31,7 @@ class ChargingStationRepository {
         }
     }
 
-
+    /** Mutable StateFlow holding the current list of charging stations. */
     private val _stations = MutableStateFlow(
         listOf(
             ChargingStation(
@@ -104,7 +116,14 @@ class ChargingStationRepository {
             )
         )
     )
+    /** Read-only StateFlow of available charging stations for UI observers. */
     val stations: StateFlow<List<ChargingStation>> = _stations.asStateFlow()
 
+    /**
+     * Finds and returns a specific charging station by its unique identifier.
+     *
+     * @param id Unique station identifier string.
+     * @return ChargingStation object if found, or null otherwise.
+     */
     fun getStationById(id: String): ChargingStation? = _stations.value.find { it.id == id }
 }

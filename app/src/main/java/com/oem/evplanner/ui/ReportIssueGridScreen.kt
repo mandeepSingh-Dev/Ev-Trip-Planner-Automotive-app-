@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -6,6 +9,10 @@ import androidx.car.app.Screen
 import androidx.car.app.model.*
 import com.oem.evplanner.model.ChargingStation
 
+/**
+ * Screen class allowing drivers to report issues (such as blocked stalls or offline chargers)
+ * at a charging station using [GridTemplate].
+ */
 class ReportIssueGridScreen(
     carContext: CarContext,
     private val station: ChargingStation
@@ -18,6 +25,9 @@ class ReportIssueGridScreen(
         "Working Great" to "Confirm full-speed session"
     )
 
+    /**
+     * Builds and returns the [GridTemplate] containing issue reporting options.
+     */
     override fun onGetTemplate(): Template {
         val gridBuilder = ItemList.Builder()
 

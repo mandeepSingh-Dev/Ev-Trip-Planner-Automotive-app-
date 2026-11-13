@@ -1,3 +1,6 @@
+/**
+ * Package definition for map rendering and custom surface surface callbacks.
+ */
 package com.oem.evplanner.map
 
 import android.graphics.*
@@ -8,6 +11,10 @@ import androidx.car.app.SurfaceCallback
 import androidx.car.app.SurfaceContainer
 import com.oem.evplanner.model.ChargingStation
 
+/**
+ * Surface renderer class implementing [SurfaceCallback] to draw custom EV range rings,
+ * route polylines, and charging station pins directly onto the car screen surface.
+ */
 class EvMapSurfaceRenderer(carContext: CarContext) : SurfaceCallback {
 
     private var surface: Surface? = null
@@ -19,6 +26,7 @@ class EvMapSurfaceRenderer(carContext: CarContext) : SurfaceCallback {
     private var selectedStation: ChargingStation? = null
     private var isEcoRoute: Boolean = false
 
+    // Paint objects for rendering map elements
     private val bgPaint = Paint().apply { color = Color.parseColor("#11161D") }
     private val roadPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#25303D")
@@ -56,9 +64,17 @@ class EvMapSurfaceRenderer(carContext: CarContext) : SurfaceCallback {
     }
 
     init {
+        // Register surface callback with the Car App Manager
         carContext.getCarService(AppManager::class.java).setSurfaceCallback(this)
     }
 
+    /**
+     * Updates the map rendering state and redraws the frame.
+     *
+     * @param rangeKm Current vehicle range in kilometers.
+     * @param station Selected charging station, if any.
+     * @param ecoRoute Whether eco route rendering mode is active.
+     */
     fun updateMapState(rangeKm: Int, station: ChargingStation?, ecoRoute: Boolean = false) {
         currentRangeKm = rangeKm
         selectedStation = station
@@ -66,6 +82,9 @@ class EvMapSurfaceRenderer(carContext: CarContext) : SurfaceCallback {
         renderFrame()
     }
 
+    /**
+     * Called when the car screen surface becomes available for drawing.
+     */
     override fun onSurfaceAvailable(surfaceContainer: SurfaceContainer) {
         surface = surfaceContainer.surface
         width = surfaceContainer.width
@@ -73,21 +92,31 @@ class EvMapSurfaceRenderer(carContext: CarContext) : SurfaceCallback {
         renderFrame()
     }
 
+    /**
+     * Called when the visible map area dimensions change (e.g. split templates).
+     */
     override fun onVisibleAreaChanged(visibleArea: Rect) {
         this.visibleArea = visibleArea
         renderFrame()
     }
 
+    /**
+     * Called when the surface is destroyed.
+     */
     override fun onSurfaceDestroyed(surfaceContainer: SurfaceContainer) {
         surface = null
     }
 
+    /**
+     * Renders a frame on the car surface canvas including background, roads, range ring, route, and vehicle pin.
+     */
     private fun renderFrame() {
         val activeSurface = surface ?: return
         if (!activeSurface.isValid || width == 0 || height == 0) return
 
         val canvas = activeSurface.lockCanvas(null) ?: return
         try {
+            // Draw background fill
             canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), bgPaint)
 
             // Offset center into the visible unoccluded right half of split templates
@@ -124,12 +153,12 @@ class EvMapSurfaceRenderer(carContext: CarContext) : SurfaceCallback {
                 }
                 canvas.drawPath(path, routePaint)
 
-                // Destination charger marker
+                // Destination charger marker circle and power label
                 canvas.drawCircle(destX, destY, 22f, pinPaint)
                 canvas.drawText("${station.maxPowerKw}kW", destX + 30f, destY + 10f, labelPaint)
             }
 
-            // 4. Vehicle location chevron
+            // 4. Vehicle location chevron indicator
             val chevron = Path().apply {
                 moveTo(centerX, centerY - 24f)
                 lineTo(centerX + 18f, centerY + 18f)

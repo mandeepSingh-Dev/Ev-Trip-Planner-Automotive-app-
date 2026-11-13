@@ -1,3 +1,6 @@
+/**
+ * Package definition for Android Auto / Automotive UI screens.
+ */
 package com.oem.evplanner.ui
 
 import androidx.car.app.CarContext
@@ -8,6 +11,10 @@ import com.oem.evplanner.map.EvMapSurfaceRenderer
 import com.oem.evplanner.model.ChargingStation
 import com.oem.evplanner.telemetry.EvTelemetryManager
 
+/**
+ * Screen class displaying detailed information, stall availability, amenities,
+ * and reservation options for a selected charging station using [PaneTemplate].
+ */
 class StationDetailScreen(
     carContext: CarContext,
     private val telemetryManager: EvTelemetryManager,
@@ -17,6 +24,9 @@ class StationDetailScreen(
 
     private var isStallReserved = false
 
+    /**
+     * Builds and returns the [PaneTemplate] showing station specifications, arrival estimates, and action buttons.
+     */
     override fun onGetTemplate(): Template {
         val state = telemetryManager.telemetryState.value
         val estimate = EvRangeCalculator.evaluateRouteToStation(state, station)
