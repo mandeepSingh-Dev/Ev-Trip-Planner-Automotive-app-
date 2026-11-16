@@ -55,7 +55,7 @@ class ChargingReceiptScreen(
             .build()
 
         return PaneTemplate.Builder(pane)
-            .setTitle("Charging Session Receipt")
+            .setTitle("ChargingReceiptScreen - Charging Session Receipt")
             .setHeaderAction(Action.BACK)
             .build()
     }

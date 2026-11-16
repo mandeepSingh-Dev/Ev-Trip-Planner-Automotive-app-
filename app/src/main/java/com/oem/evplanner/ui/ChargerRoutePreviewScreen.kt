@@ -121,7 +121,7 @@ class ChargerRoutePreviewScreen(
             .build()
 
         return RoutePreviewNavigationTemplate.Builder()
-            .setTitle(station.name)
+            .setTitle("ChargerRoutePreviewScreen - ${station.name}")
             .setHeaderAction(Action.BACK)
             .setActionStrip(ActionStrip.Builder().addAction(preconditionAction).build())
             .setItemList(listBuilder.build())

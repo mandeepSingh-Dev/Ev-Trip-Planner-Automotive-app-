@@ -103,7 +103,7 @@ class ChargingSessionScreen(
             .build()
 
         return PaneTemplate.Builder(pane)
-            .setTitle("EV Battery & Charging Telemetry")
+            .setTitle("ChargingSessionScreen - EV Battery & Charging Telemetry")
             .setHeaderAction(Action.BACK)
             .build()
     }

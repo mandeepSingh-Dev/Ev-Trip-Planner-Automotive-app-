@@ -41,7 +41,7 @@ class ChargerFilterGridScreen(
         }
 
         return GridTemplate.Builder()
-            .setTitle("Filter Charging Hubs")
+            .setTitle("ChargerFilterGridScreen - Filter Charging Hubs")
             .setHeaderAction(Action.BACK)
             .setSingleList(gridBuilder.build())
             .build()

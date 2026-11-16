@@ -46,7 +46,6 @@ class TripItineraryScreen(
         // Action button to start the first leg of the trip
         val startFirstLegAction = Action.Builder()
             .setTitle("Start Trip")
-            .setBackgroundColor(CarColor.PRIMARY)
             .setOnClickListener {
                 val firstStation = plan.waypoints.firstNotNullOfOrNull { it.station }
                 if (firstStation != null) {
@@ -58,7 +57,7 @@ class TripItineraryScreen(
             .build()
 
         return ListTemplate.Builder()
-            .setTitle("Trip: ${plan.destinationName}")
+            .setTitle("TripItineraryScreen - Trip: ${plan.destinationName}")
             .setHeaderAction(Action.BACK)
             .setSingleList(listBuilder.build())
             .setActionStrip(ActionStrip.Builder().addAction(startFirstLegAction).build())

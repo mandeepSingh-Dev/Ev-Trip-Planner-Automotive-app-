@@ -172,7 +172,7 @@ class ChargerListScreen(
             }
             .build()
 
-        val headerTitle = "EV Chargers • ${currentState.socPercent}% (${currentState.rangeRemainingKm} km)"
+        val headerTitle = "ChargerListScreen - EV Chargers • ${currentState.socPercent}% (${currentState.rangeRemainingKm} km)"
 
         return PlaceListMapTemplate.Builder()
             .setTitle(headerTitle)

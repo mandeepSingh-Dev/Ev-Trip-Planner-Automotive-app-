@@ -50,7 +50,7 @@ class ReportIssueGridScreen(
         }
 
         return GridTemplate.Builder()
-            .setTitle("Report Status • ${station.name}")
+            .setTitle("ReportIssueGridScreen - Report Status • ${station.name}")
             .setHeaderAction(Action.BACK)
             .setSingleList(gridBuilder.build())
             .build()

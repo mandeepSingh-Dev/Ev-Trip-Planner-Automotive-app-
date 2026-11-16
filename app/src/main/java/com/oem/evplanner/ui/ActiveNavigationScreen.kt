@@ -76,7 +76,7 @@ class ActiveNavigationScreen(
             .build()
 
         // Build navigation step
-        val step = Step.Builder("Continue toward ${station.name}")
+        val step = Step.Builder("ActiveNavigationScreen: Continue toward ${station.name}")
             .setManeuver(maneuver)
             .setRoad("NH-48 Express Corridor")
             .build()
@@ -104,6 +104,7 @@ class ActiveNavigationScreen(
         val endTripAction = Action.Builder()
             .setTitle("End Route")
             .setBackgroundColor(CarColor.RED)
+            .setFlags(Action.FLAG_PRIMARY)
             .setOnClickListener {
                 navigationManager.navigationEnded()
                 screenManager.pop()

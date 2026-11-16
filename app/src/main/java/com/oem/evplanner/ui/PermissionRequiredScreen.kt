@@ -70,7 +70,7 @@ class PermissionRequiredScreen(
             .build()
 
         return MessageTemplate.Builder(message)
-            .setTitle("Permissions Required")
+            .setTitle("PermissionRequiredScreen - Permissions Required")
             .setHeaderAction(Action.APP_ICON)
             .addAction(grantAction)
             .build()

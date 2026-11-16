@@ -73,7 +73,7 @@ class StationDetailScreen(
             .build()
 
         return PaneTemplate.Builder(pane)
-            .setTitle(station.name)
+            .setTitle("StationDetailScreen - ${station.name}")
             .setHeaderAction(Action.BACK)
             .build()
     }

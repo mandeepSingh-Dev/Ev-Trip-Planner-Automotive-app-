@@ -83,7 +83,7 @@ class TripSearchScreen(
             }
         )
             .setHeaderAction(Action.BACK)
-            .setSearchHint("Search city or highway destination")
+            .setSearchHint("TripSearchScreen - Search city or highway destination")
             .setShowKeyboardByDefault(false)
             .setItemList(listBuilder.build())
             .build()

@@ -59,7 +59,7 @@ class VehicleSettingsScreen(
             )
 
         return ListTemplate.Builder()
-            .setTitle("EV Trip & Vehicle Settings")
+            .setTitle("VehicleSettingsScreen - EV Trip & Vehicle Settings")
             .setHeaderAction(Action.BACK)
             .setSingleList(listBuilder.build())
             .build()

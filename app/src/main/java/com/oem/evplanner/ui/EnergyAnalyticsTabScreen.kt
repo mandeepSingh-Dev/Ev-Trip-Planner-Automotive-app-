@@ -97,7 +97,7 @@ class EnergyAnalyticsTabScreen(
             )
             .build()
 
-        return PaneTemplate.Builder(pane).build()
+        return PaneTemplate.Builder(pane).setTitle("EnergyAnalyticsTabScreen - Energy & Efficiency").build()
     }
 
     /**
@@ -114,6 +114,7 @@ class EnergyAnalyticsTabScreen(
             )
         }
         return ListTemplate.Builder()
+            .setTitle("EnergyAnalyticsTabScreen - Charge History")
             .setSingleList(listBuilder.build())
             .build()
     }
